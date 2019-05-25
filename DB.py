@@ -73,6 +73,8 @@ class Database:
 
     def get_user_language(self, user_id):
         query = f"SELECT language FROM users WHERE user_id = {user_id}"
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
     
     def query(self, sql):
         self.cursor.execute(sql)
