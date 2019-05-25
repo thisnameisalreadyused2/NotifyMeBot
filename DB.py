@@ -36,8 +36,8 @@ class Database:
 
         self.close()
 
-    def add_user(self, id, timezone):
-        query = f"INSERT OR IGNORE INTO users (id, timezone) VALUES ({id}, {timezone})"
+    def add_user(self, id, timezone, language):
+        query = f"INSERT OR IGNORE INTO users (id, timezone, language) VALUES ({id}, {timezone}, '{language}')"
         self.cursor.executescript(query)
         self.conn.commit()
 
@@ -70,6 +70,9 @@ class Database:
         query = f"SELECT date,name,type FROM reminders WHERE user_id = {user_id}"
         self.cursor.execute(query)
         return self.cursor.fetchall()
+
+    def get_user_language(self, user_id):
+        query = f"SELECT language FROM users WHERE user_id = {user_id}"
     
     def query(self, sql):
         self.cursor.execute(sql)
