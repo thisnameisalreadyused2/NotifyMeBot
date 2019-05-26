@@ -62,7 +62,7 @@ class Database:
         return self.cursor.fetchall()
 
     def get_reminders_for_time(self, time):
-        query = f"SELECT user_id,date,name,type FROM reminders WHERE date = {time}"
+        query = f"SELECT user_id,date,name,type FROM reminders WHERE date >= {time-60} AND date <= {time}"
         self.cursor.execute(query)
         return self.cursor.fetchall()
 
@@ -75,7 +75,12 @@ class Database:
         query = f"SELECT language FROM users WHERE user_id = {user_id}"
         self.cursor.execute(query)
         return self.cursor.fetchall()
-    
+
+    def get_birthday_date(self, user_id, name):
+        query = f"SELECT date FROM events WHERE user_id = {user_id} AND name = '{name}' AND type = 'birthday'"
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
+
     def query(self, sql):
         self.cursor.execute(sql)
         self.conn.commit()
