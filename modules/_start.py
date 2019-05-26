@@ -2,13 +2,18 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardRe
 from telegram.ext import ConversationHandler
 
 from localization import languages
+from utils.message_parser import parser
+
+from ._regular_reminder import reminder_handler
+
+import datetime
 
 from DB import Database
 db = Database("db")
 
 user_lang = ""
 
-LANG, TIME_ZONE, MENU, SETTINGS, APPLY_SETTINGS = range(5)
+LANG, TIME_ZONE, MENU, CHOOSE_EVENT, ADD_EVENT = range(5)
 
 def start_command(update, context):
     keyboard = [[InlineKeyboardButton("EN 🏴󠁧󠁢󠁥󠁮󠁧󠁿", callback_data="en"),
@@ -37,10 +42,12 @@ def time_zone_handler(update, context):
     context.bot.send_message(chat_id=update.message.chat_id,
                              text=languages[user_lang]["time_zone"] + str(input_text) + ".")
 
-    db.add_user(update.message.from_user.id, int(input_text), user_lang)
+    db.add_user(update.effective_message.chat_id, int(input_text), user_lang)
 
-    keyboard = [[languages[user_lang]["menu_events"],
-                 languages[user_lang]["menu_settings"]]]
+    keyboard = [[languages[user_lang]["menu_add_events"],
+                 languages[user_lang]["menu_show_events"]],
+                [languages[user_lang]["menu_settings"]]]
+
     reply_markup = ReplyKeyboardMarkup(keyboard=keyboard,resize_keyboard=True)
 
     context.bot.send_message(chat_id=update.effective_message.chat_id,
@@ -51,8 +58,25 @@ def time_zone_handler(update, context):
     return MENU
 
 def menu_handler(update, context):
-    if update.message.text == languages[user_lang]["menu_events"]:
-        pass
+    if update.message.text == languages[user_lang]["menu_add_events"]:
+        context.bot.send_message(update.effective_chat.id, languages[user_lang]["enter_event_text"])
+        return ADD_EVENT
+
+    elif update.message.text == languages[user_lang]["menu_show_events"]:
+        all_user_events = db.get_all_events_for_user(update.message.from_user.id)
+
+        counter = 1
+        result = ""
+        for user_event in all_user_events:
+            result += "*№{}*\n*Date:* {}\n*Name:* {}\n*Type:* {}\n\n"\
+                .format(str(counter),
+                        str(datetime.datetime.utcfromtimestamp(user_event[0]).strftime("%d.%m.%Y %H:%M")),
+                        str(user_event[1]),
+                        str(user_event[2]))
+            counter += 1
+        context.bot.send_message(chat_id=update.effective_chat.id, text=result, parse_mode="Markdown")
+
+
     elif update.message.text == languages[user_lang]["menu_settings"]:
         keyboard = [[InlineKeyboardButton(languages[user_lang]["birthday_info"], callback_data="birthday_info"),
                      InlineKeyboardButton(languages[user_lang]["birthday_settings"], callback_data="birthday_settings")],
@@ -67,6 +91,13 @@ def menu_handler(update, context):
         context.bot.send_message(chat_id=update.message.chat_id,
                                  text=languages[user_lang]["settings_info"],
                                  reply_markup=reply_markup)
+    return MENU
+
+def add_event_handler(update, context):
+    event_text = parser(update.message.text)
+    #context.bot.send_message(chat_id=update.effective_chat.id, text=event_text)
+    reminder_handler(update.effective_chat.id, event_text)
+    context.bot.send_message(chat_id=update.message.chat_id, text=languages[user_lang]["added_successfully"])
 
     return MENU
 
