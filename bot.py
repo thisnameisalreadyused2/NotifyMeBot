@@ -23,5 +23,6 @@ conv_handler = ConversationHandler(
     )
 
 dp.add_handler(conv_handler)
+dp.add_handler(CommandHandler('test_sum', modules.summary_handler, pass_args=True))
 
 updater.start_polling()
