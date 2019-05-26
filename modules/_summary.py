@@ -7,7 +7,7 @@ def summary_handler(update, context):
     news = get_news_for_country("ua")
     msg = f"{weather}\n\n{news}"
     try:
-        context.bot.send_message(update.message.from_user.id, msg, parse_mode="Markdown")
+        context.bot.send_message(update.message.from_user.id, msg, parse_mode="Markdown", disable_web_page_preview=True)
     except Exception as ex:
         print(ex)
 
