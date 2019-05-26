@@ -14,13 +14,15 @@ conv_handler = ConversationHandler(
 
         states={
             modules.LANG: [CallbackQueryHandler(modules.lang_command)],
-            modules.TIME_ZONE: [MessageHandler(Filters.text, modules.time_zone_handler)],
-            modules.MENU: [MessageHandler(Filters.text, modules.menu_handler)]
+            modules.TIME_ZONE: [MessageHandler(Filters.text, modules.time_zone_handler, pass_user_data=True)],
+            modules.MENU: [MessageHandler(Filters.text, modules.menu_handler, pass_user_data=True)],
+            modules.ADD_EVENT: [MessageHandler(Filters.text, modules.add_event_handler, pass_user_data=True)]
         },
 
         fallbacks=[CommandHandler(['cancel'], modules.cancel_command)]
     )
 
 dp.add_handler(conv_handler)
+dp.add_handler(CommandHandler('test_sum', modules.summary_handler, pass_args=True))
 
 updater.start_polling()
