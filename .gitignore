@@ -117,6 +117,7 @@ venv.bak/
 
 # Generated files
 .idea/**/contentModel.xml
+.idea/inspectionProfiles/*
 
 # Sensitive or high-churn files
 .idea/**/dataSources/
